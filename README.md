@@ -2,7 +2,7 @@
 
 > [点击此处跳转到中文文档](README-zh-CN.md)
 
-Lightweight C++ driver for the QMC5883P 3-axis magnetometer, designed for STM32 projects using the STM32Cube HAL I2C interface.
+Lightweight C++ driver for the QMC5883P 3-axis magnetometer, designed for STM32 projects using the STM32Cube HAL I2C interface. FreeRTOS compatible.
 
 ## Features
 - Simple C++ class interface for initialization, configuration and reading magnetometer data

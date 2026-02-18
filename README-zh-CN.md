@@ -2,7 +2,7 @@
 
 > [Click here for English docs](README.md)
 
-这是一个面向 STM32（使用 STM32Cube HAL I2C）的轻量级 QMC5883P 三轴磁力计 C++ 驱动库。
+这是一个面向 STM32（使用 STM32Cube HAL I2C）的轻量级 QMC5883P 三轴磁力计 C++ 驱动库。FreeRTOS 已兼容。
 
 ## 功能
 - 提供简洁的 C++ 类接口用于初始化、配置与读取磁力计数据
