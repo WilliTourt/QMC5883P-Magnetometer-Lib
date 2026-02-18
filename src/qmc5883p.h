@@ -20,7 +20,12 @@
 
 #pragma once
 
-#include "main.h"
+#include <stdint.h>
+#include "cpp_main.h"
+
+#ifdef HAL_I2C_MODULE_ENABLED
+#include "i2c.h"
+#endif
 
 #if !defined(__STM32F1xx_HAL_H) && \
     !defined(__STM32F4xx_HAL_H) && \
@@ -30,17 +35,15 @@
     !defined(__STM32G0xx_HAL_H) && \
     !defined(__STM32WBxx_HAL_H) && \
     !defined(__STM32WLxx_HAL_H)
-#error "The QMC5883P Library can only be used with STM32Cube HAL drivers"
 #endif
 
 #if !defined(HAL_I2C_MODULE_ENABLED)
-#error "At least one IIC port should be opened"
 #endif
 
 /* QMC5833P User Configuration ******************************************/
 
 // QMC5883P I2C address
-#define QMC5883P_ADDR 0x2C  // 0010 1100 << 1
+#define QMC5883P_ADDR 0x2C  // 0010 1100
 
 // QMC5883P Chip ID
 #define QMC5883P_CHIP_ID 0x80
@@ -49,12 +52,12 @@
 #define QMC5883P_READ_TIMEOUT_MS 100
 
 // Magnetic calibration parameters
-#define MAG_X_OFFSET            0.068928f
-#define MAG_Y_OFFSET            0.003696f
-#define MAG_Z_OFFSET            0.024412f
-#define MAG_X_SCALE             0.977537f
-#define MAG_Y_SCALE             1.026078f
-#define MAG_Z_SCALE             0.997570f
+#define MAG_X_OFFSET            0.167200f
+#define MAG_Y_OFFSET            -0.906200f
+#define MAG_Z_OFFSET            -0.713000f
+#define MAG_X_SCALE             2.052229f
+#define MAG_Y_SCALE             0.711101f
+#define MAG_Z_SCALE             0.903787f
 
 /* QMC5833P Register Map ************************************************/
 
@@ -172,7 +175,7 @@ class QMC5883P {
          * @param spd Output data rate (default: 200Hz)
          * @param rng Measurement range (default: ±2G)
          */
-        QMC5883P(I2C_HandleTypeDef *hi2c, QMC5883P_Mode mode, QMC5883P_Spd spd = QMC5883P_Spd::ODR_200HZ,
+        QMC5883P(I2C_HandleTypeDef* hi2c, QMC5883P_Mode mode, QMC5883P_Spd spd = QMC5883P_Spd::ODR_50HZ,
                  QMC5883P_Rng rng = QMC5883P_Rng::RNG_2G);
         
         /**
@@ -214,6 +217,8 @@ class QMC5883P {
          * @return float Z-axis magnetic field in Gauss
          */
         inline float getZ() { return _mag_z; }
+        
+        void calibration(bool trigger);
 
     private:
         /**
@@ -224,7 +229,7 @@ class QMC5883P {
          * @param len Length of data
          * @return HAL_StatusTypeDef Status of I2C operation
          */
-        HAL_StatusTypeDef _i2cSend(uint8_t reg, uint8_t *data, uint8_t len);
+        bool _i2cSend(uint8_t reg, uint8_t *data, uint8_t len);
         
         /**
          * @brief Receive data from the sensor via I2C
@@ -234,7 +239,7 @@ class QMC5883P {
          * @param len Length of data
          * @return HAL_StatusTypeDef Status of I2C operation
          */
-        HAL_StatusTypeDef _i2cRecv(uint8_t reg, uint8_t *data, uint8_t len);
+        bool _i2cRecv(uint8_t reg, uint8_t *data, uint8_t len);
 
         /**
          * @brief Check if new data is available
@@ -244,12 +249,23 @@ class QMC5883P {
          */
         bool _isDataRdy();
 
-        I2C_HandleTypeDef *_hi2c;      ///< I2C handle
+        void Delay(uint32_t ms);
+        uint32_t getTick(void);
+
         QMC5883P_Mode _mode;           ///< Operation mode
         QMC5883P_Spd _speed;           ///< Output data rate
         QMC5883P_Rng _range;           ///< Measurement range
         uint16_t _sensitivity;         ///< Sensitivity based on range
 
-        float _mag_x, _mag_y, _mag_z;  ///< Calibrated magnetic field values
+        I2C_HandleTypeDef* _hi2c;
+        
+        float _offset_x = 0;
+        float _offset_y = 0;
+        float _offset_z = 0;
+        float _scale_x = 0;
+        float _scale_y = 0;
+        float _scale_z = 0;
 
+
+        float _mag_x, _mag_y, _mag_z;  ///< Calibrated magnetic field values
 };
